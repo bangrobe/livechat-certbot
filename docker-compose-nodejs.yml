@@ -11,6 +11,9 @@ services:
       - ./conf/nginx/site-nodejs.conf:/etc/nginx/conf.d/default.conf
       - ./conf/nginx/mime.types:/etc/nginx/mime.types
       - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./conf/certbot/www:/var/www/certbot/:ro
+      - ./conf/certbot/conf/:/etc/nginx/ssl/:ro
+
     depends_on:
       - db
       - php
@@ -81,7 +84,7 @@ services:
       - code-network
     restart: always
   db:
-    image: mariadb
+    image: mysql:5
     env_file: .env
     environment:
       TZ: UTC
@@ -89,6 +92,14 @@ services:
       - ./dbdata:/var/lib/mysql
     ports:
       - 127.0.0.1:3307:3306
+    networks:
+      - code-network
+    restart: always
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./conf/certbot/conf:/etc/letsencrypt:rw
+      - ./conf/certbot/www:/var/www/certbot:rw
     networks:
       - code-network
     restart: always
